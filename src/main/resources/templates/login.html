@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login — Frameskipt</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="site-header">
+        <a class="logo" th:href="@{/games}">Frameskipt</a>
+    </header>
+
+    <main class="page-container narrow">
+
+        <h1>Sign In</h1>
+        <p class="meta">The catalog remembers your voice.</p>
+
+        <!-- Spring sets a "error" param on the URL when login fails,
+             configured via failureUrl("/login?error=true") in SecurityConfig -->
+        <div class="error-banner" th:if="${param.error}">
+            Invalid username or password. Try again.
+        </div>
+
+        <!-- Action must be exactly /login — that's the loginProcessingUrl
+             Spring Security's filter intercepts. The fields must be named
+             exactly "username" and "password" — the filter reads them by
+             those exact names. Thymeleaf auto-injects the hidden CSRF
+             token into any th:action form, so you don't add it manually. -->
+        <form class="zine-form" th:action="@{/login}" method="post">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username"
+                       autocomplete="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password"
+                       autocomplete="current-password" required>
+            </div>
+
+            <button type="submit" class="btn btn-massive">Sign In</button>
+
+        </form>
+
+        <p class="meta" style="margin-top: 1.5rem;">
+            No account? <a th:href="@{/register}">Register here.</a>
+        </p>
+
+    </main>
+
+</body>
+</html>

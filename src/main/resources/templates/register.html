@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register — Frameskipt</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="site-header">
+        <a class="logo" th:href="@{/games}">Frameskipt</a>
+    </header>
+
+    <main class="page-container narrow">
+
+        <h1>Join the Catalog</h1>
+        <p class="meta">Create an account to start logging.</p>
+
+        <!-- Error banner: only rendered if errorMessage exists in the Model -->
+        <div class="error-banner" th:if="${errorMessage}">
+            <span th:text="${errorMessage}">Error message here.</span>
+        </div>
+
+        <!-- th:object binds this entire form to the User object the
+             Controller placed in the Model. th:action specifies where
+             the POST goes; method=post is required for Spring to
+             route this to our @PostMapping. -->
+        <form class="zine-form" th:action="@{/register}" th:object="${user}" method="post">
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" th:field="*{username}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" th:field="*{email}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" th:field="*{password}" required>
+            </div>
+
+            <button type="submit" class="btn btn-massive">Create Account</button>
+
+        </form>
+
+    </main>
+
+</body>
+</html>

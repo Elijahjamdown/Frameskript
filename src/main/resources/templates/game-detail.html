@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${game.title} + ' — Frameskipt'">Game — Frameskipt</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="logo" th:href="@{/games}">Frameskipt</a>
+
+            <nav class="header-nav">
+                <div sec:authorize="isAnonymous()">
+                    <a class="btn btn-outline" th:href="@{/login}">Login</a>
+                    <a class="btn" th:href="@{/register}">Register</a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()">
+                    <span class="meta header-username">
+                        <a th:href="@{/profile}">
+                            Logged in as <strong sec:authentication="name">username</strong>
+                        </a>
+                    </span>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-outline-danger">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <div class="detail-header">
+            <h1 th:text="${game.title}">Game Title</h1>
+            <span class="release-year" th:text="${game.releaseYear}">2024</span>
+            <span class="meta" th:text="' — ' + ${game.studio}"> — Studio</span>
+        </div>
+
+        <div class="detail-layout">
+
+            <div class="detail-cover">
+                <img th:src="${game.coverArtUrl}" th:alt="${game.title}">
+
+                <div class="rating-block">
+                    <span class="score-text">Frameskipt Score</span>
+                    <span th:text="${averageRating} + ' / 5.0'">0.0 / 5.0</span>
+                </div>
+            </div>
+
+            <div class="detail-info">
+
+                <div class="tag-list">
+                    <span class="tag" th:each="genre : ${game.genres}"
+                          th:text="${genre}">GENRE</span>
+                </div>
+
+                <div class="credits-block">
+                    <h2>Cast &amp; Crew</h2>
+
+                    <div class="credit-row">
+                        <span class="credit-role">Director</span>
+                        <span class="credit-name" th:text="${game.gameDirector}">Name</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-role">Lead Writer</span>
+                        <span class="credit-name" th:text="${game.leadWriter}">Name</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-role">Composer</span>
+                        <span class="credit-name" th:text="${game.leadComposer}">Name</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-role">Art Director</span>
+                        <span class="credit-name" th:text="${game.artDirector}">Name</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-role">Lead Programmer</span>
+                        <span class="credit-name" th:text="${game.leadProgrammer}">Name</span>
+                    </div>
+                    <div class="credit-row">
+                        <span class="credit-role">Publisher</span>
+                        <span class="credit-name" th:text="${game.publisher}">Name</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <div class="error-banner" th:if="${reviewError}">
+            <span th:text="${reviewError}">Error message here.</span>
+        </div>
+
+        <div class="review-submit-block">
+            <h2>Log Your Critique</h2>
+
+            <form th:action="@{/games/{id}/reviews(id=${game.id})}" method="post">
+
+                <div class="form-group">
+                    <label for="rating">Rating (0.5 – 5.0)</label>
+                    <div class="rating-input-group">
+                        <input type="number" id="rating" name="rating"
+                               min="0.5" max="5.0" step="0.5" required>
+                        <span class="meta">out of 5.0 stars</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="body">Your Critique</label>
+                    <textarea id="body" name="body"
+                              placeholder="What did this game do that nothing else does?"
+                              required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-massive">Submit Review</button>
+
+            </form>
+        </div>
+
+        <div class="reviews-section">
+            <h2 th:text="'Reviews (' + ${game.reviews.size()} + ')'">Reviews</h2>
+
+            <div class="review-card" th:each="review : ${game.reviews}">
+                <div class="review-card-header">
+                    <span class="reviewer" th:text="${review.user.username}">Username</span>
+                    <span class="review-rating" th:text="${review.rating} + ' / 5.0'">0.0 / 5.0</span>
+                </div>
+                <div class="review-card-body">
+                    <p th:text="${review.body}">Review text goes here.</p>
+                    <span class="review-card-date"
+                          th:text="${#temporals.format(review.loggedAt, 'MMM dd, yyyy')}">
+                        Jan 01, 2024
+                    </span>
+                </div>
+            </div>
+
+            <p th:if="${game.reviews.isEmpty()}" class="meta">
+                No critiques logged yet. Be the first.
+            </p>
+        </div>
+    </main>
+
+</body>
+</html>

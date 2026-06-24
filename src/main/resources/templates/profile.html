@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'@' + ${user.username} + ' — Profile'">Profile</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="logo" th:href="@{/games}">Frameskipt</a>
+
+            <nav class="header-nav">
+                <div sec:authorize="isAuthenticated()">
+                    <span class="meta header-username">
+                        <a th:href="@{/profile}">
+                            Logged in as <strong sec:authentication="name">username</strong>
+                        </a>
+                    </span>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-outline-danger">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page-container">
+
+        <div class="profile-header">
+            <h1 th:text="'@' + ${user.username}">@username</h1>
+            <p class="meta">Frameskipt Contributor</p>
+        </div>
+
+        <h2>Your Critiques (<span th:text="${reviews.size()}">0</span>)</h2>
+
+        <div class="reviews-section">
+            
+            <div class="review-card" th:each="review : ${reviews}">
+                <div class="review-card-header">
+                    <span class="reviewer" th:text="${review.game.title}">Game Title</span>
+                    <span class="review-rating" th:text="${review.rating} + ' / 5.0'">0.0 / 5.0</span>
+                </div>
+                <div class="review-card-body">
+                    <p th:text="${review.body}">Review text goes here.</p>
+                    <span class="review-card-date"
+                          th:text="${#temporals.format(review.loggedAt, 'MMM dd, yyyy')}">
+                        Jan 01, 2024
+                    </span>
+                    
+                    <a th:href="@{/games/{id}(id=${review.game.id})}" class="btn btn-outline" style="margin-top: 1rem; display: inline-block;">
+                        View Game Entry
+                    </a>
+                </div>
+            </div>
+
+            <p th:if="${reviews.isEmpty()}" class="meta">
+                You haven't logged any critiques yet. <a th:href="@{/games}">Browse the catalog.</a>
+            </p>
+        </div>
+
+    </main>
+
+</body>
+</html>
