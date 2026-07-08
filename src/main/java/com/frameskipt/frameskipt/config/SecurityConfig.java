@@ -20,6 +20,7 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/", "/games", "/games/{id}").permitAll()
+                .requestMatchers("/api/igdb/**").permitAll()
                 .requestMatchers("/register").permitAll()
                 .requestMatchers("/login").permitAll()
                 .requestMatchers("/games/*/reviews").authenticated()

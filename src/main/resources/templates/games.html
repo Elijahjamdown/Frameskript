@@ -12,13 +12,11 @@
     <header class="site-header">
         <div class="header-inner">
             <a class="logo" th:href="@{/games}">Frameskipt</a>
-
             <nav class="header-nav">
                 <div sec:authorize="isAnonymous()">
                     <a class="btn btn-outline" th:href="@{/login}">Login</a>
                     <a class="btn" th:href="@{/register}">Register</a>
                 </div>
-
                 <div sec:authorize="isAuthenticated()">
                     <span class="meta header-username">
                         <a th:href="@{/profile}">
@@ -26,40 +24,154 @@
                         </a>
                     </span>
                     <form th:action="@{/logout}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-outline-danger">
-                            Logout
-                        </button>
+                        <button type="submit" class="btn btn-outline-danger">Logout</button>
                     </form>
                 </div>
             </nav>
         </div>
     </header>
-    
-    <main class="page-container">
-        <h1>The Catalog</h1>
-        <p class="meta">Curated entries — no backlog filler.</p>
 
-        <div class="catalog-grid">
-            <div class="game-card" th:each="game : ${games}">
-                <a th:href="@{/games/{id}(id=${game.id})}">
-                    <img th:src="${game.coverArtUrl}" th:alt="${game.title}">
-                </a>
-                <div class="game-card-body">
-                    <h3>
-                        <a th:href="@{/games/{id}(id=${game.id})}"
-                           th:text="${game.title}">Game Title</a>
-                    </h3>
-                    <p class="meta" th:text="${game.releaseYear} + ' — ' + ${game.studio}">
-                        2024 — Studio Name
-                    </p>
+    <!-- NEW RELEASES CAROUSEL -->
+    <section class="carousel-section">
+        <div class="carousel" id="newReleasesCarousel">
+            <div class="carousel-track" id="carouselTrack">
+                <div class="carousel-slide" th:each="game : ${newReleases}">
+                    <img th:src="${'https:' + game['bestArtworkUrl']}"
+                        th:alt="${game['name']}"
+                        class="carousel-img"
+                        onerror="this.src='/images/placeholder.jpg'">
+                    <div class="carousel-overlay">
+                        <h2 th:text="${game['name']}">Game Title</h2>
+                        <p class="meta" th:text="${game['summary']}">Game summary</p>
+                        <span class="badge">New Release</span>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <p th:if="${games.isEmpty()}" class="meta">
-            No games logged yet. The catalog is waiting.
-        </p>
+            <!-- Arrows -->
+            <button class="carousel-arrow left" onclick="moveCarousel(-1)">&#8249;</button>
+            <button class="carousel-arrow right" onclick="moveCarousel(1)">&#8250;</button>
+
+            <!-- Dots -->
+            <div class="carousel-dots" id="carouselDots"></div>
+        </div>
+    </section>
+
+    <main class="page-container">
+
+        <!-- POPULAR THIS WEEK -->
+        <section class="feed-section popular" id="popularSection">
+            <h2 class="section-title">Popular This Week</h2>
+            <button class="feed-arrow left" onclick="scrollFeed('popularRow', -1)">&#8249;</button>
+            <button class="feed-arrow right" onclick="scrollFeed('popularRow', 1)">&#8250;</button>
+            <div class="feed-row" id="popularRow">
+                <div class="feed-card" th:each="game : ${popularThisWeek}">
+                    <img th:src="${'https:' + game['cover']['url'].toString().replace('t_thumb', 't_cover_big')}"
+                         th:alt="${game['name']}"
+                         onerror="this.src='/images/placeholder.jpg'">
+                    <p class="feed-card-title" th:text="${game['name']}">Game Title</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- GENERAL FEED -->
+        <section class="feed-section community" id="communitySection">
+            <h2 class="section-title">On the Radar</h2>
+            <button class="feed-arrow left" onclick="scrollFeed('communityRow', -1)">&#8249;</button>
+            <button class="feed-arrow right" onclick="scrollFeed('communityRow', 1)">&#8250;</button>
+            <div class="feed-row" id="communityRow">
+                <div class="feed-card" th:each="game : ${generalFeed}">
+                    <img th:src="${'https:' + game['cover']['url'].toString().replace('t_thumb', 't_cover_big')}"
+                         th:alt="${game['name']}"
+                         onerror="this.src='/images/placeholder.jpg'">
+                    <p class="feed-card-title" th:text="${game['name']}">Game Title</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- LOGGED GAMES (your database) -->
+        <section class="feed-section" th:if="${!games.isEmpty()}">
+            <h2 class="section-title">The Catalog</h2>
+            <div class="catalog-grid">
+                <div class="game-card" th:each="game : ${games}">
+                    <a th:href="@{/games/{id}(id=${game.id})}">
+                        <img th:src="${game.coverArtUrl}" th:alt="${game.title}">
+                    </a>
+                    <div class="game-card-body">
+                        <h3>
+                            <a th:href="@{/games/{id}(id=${game.id})}"
+                               th:text="${game.title}">Game Title</a>
+                        </h3>
+                        <p class="meta" th:text="${game.releaseYear} + ' — ' + ${game.studio}">
+                            2024 — Studio Name
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </main>
+
+    <script>
+        let current = 0;
+        let autoScrollTimer;
+        const track = document.getElementById('carouselTrack');
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dotsContainer = document.getElementById('carouselDots');
+
+        // Build dots
+        slides.forEach((_, i) => {
+            const dot = document.createElement('span');
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.onclick = () => {
+                goToSlide(i);
+                resetAutoScroll();
+            };
+            dotsContainer.appendChild(dot);
+        });
+
+        function goToSlide(index) {
+            current = index;
+            track.style.transform = `translateX(-${current * 100}%)`;
+            document.querySelectorAll('.dot').forEach((d, i) => {
+                d.classList.toggle('active', i === current);
+            });
+        }
+
+        function moveCarousel(dir) {
+            current = (current + dir + slides.length) % slides.length;
+            goToSlide(current);
+        }
+
+        function startAutoScroll() {
+            autoScrollTimer = setInterval(() => moveCarousel(1), 7000);
+        }
+
+        function resetAutoScroll() {
+            clearInterval(autoScrollTimer);
+            setTimeout(startAutoScroll, 5000);
+        }
+
+        startAutoScroll();
+
+        // Show arrows on hover
+        const carousel = document.getElementById('newReleasesCarousel');
+        carousel.addEventListener('mousemove', (e) => {
+            const rect = carousel.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const threshold = 100;
+            document.querySelector('.carousel-arrow.left').style.opacity = x < threshold ? '1' : '0';
+            document.querySelector('.carousel-arrow.right').style.opacity = x > rect.width - threshold ? '1' : '0';
+        });
+        carousel.addEventListener('mouseleave', () => {
+            document.querySelectorAll('.carousel-arrow').forEach(a => a.style.opacity = '0');
+        });
+
+        function scrollFeed(rowId, dir) {
+            const row = document.getElementById(rowId);
+            row.scrollBy({ left: dir * 700, behavior: 'smooth' });
+        }
+    </script>
 
 </body>
 </html>
